@@ -1,0 +1,12 @@
+---
+- name: Setup Storagenode Watchtower
+  docker_container:
+    restart_policy: always
+    name: storj-watchtower
+    image: storjlabs/watchtower
+    memory: 50M
+    stop_timeout: 300
+    debug: yes
+    command: "{{ [prefix] | product(node_names) | map('join') | list }}"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"

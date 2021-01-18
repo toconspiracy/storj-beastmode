@@ -1,0 +1,17 @@
+---
+- name: Create Containerbuild directory
+  file:
+    path: /opt/containerbuild
+    state: directory
+
+- name: Git checkout Storj-Exporter
+  git:
+    repo: 'https://github.com/anclrii/Storj-Exporter.git'
+    dest: /opt/containerbuild/storj-exporter
+
+- name: Build Storj-Exporter image
+  docker_image:
+    name: storj-exporter
+    build:
+      path: /opt/containerbuild/storj-exporter
+    source: build

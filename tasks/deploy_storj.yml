@@ -1,0 +1,91 @@
+---
+- name: Create STORJ Network
+  docker_network:
+    name: "{{ storj_network_name }}"
+    ipam_config:
+      - subnet: "{{ storj_network_subnet }}"
+        gateway: "{{ storj_network_gateway }}"
+        iprange: "{{ storj_network_iprange }}"
+
+- name: Create Storagenode Identity Directory
+  file:
+    path: "{{ item.path }}/identity"
+    state: directory
+  with_items:
+    - "{{ storj_nodes }}"
+
+- name: Create Storagenode Data Directory
+  file:
+    path: "{{ item.path }}/data"
+    state: directory
+  with_items:
+    - "{{ storj_nodes }}"
+
+- name: Add Config for Logoutput to file
+  lineinfile:
+    path: "{{ item.path }}/data/config.yaml"
+    line: 'log.output: "/app/config/node.log"'
+  with_items:
+    - "{{ storj_nodes }}"
+  when: item.setup is undefined or item.setup is false
+
+- name: Setup Storagenode Container
+  docker_container:
+    state: "{{ item.state | default('started') }}"
+    restart_policy: unless-stopped
+    name: "storj-{{ item.name }}"
+    stop_timeout: 300
+    memory: 512M
+    image: storjlabs/storagenode:latest
+    env:
+      WALLET: "{{ storj_wallet }}"
+      EMAIL: "{{ storj_email }}"
+      ADDRESS: "{{ storj_address }}:{{ item.ext_port_node }}"
+      STORAGE: "{{ item.storagesize }}"
+      SETUP: "{{ item.setup | default('false') }}"
+    published_ports:
+      - "{{ item.ext_port_node }}:28967"
+      - "{{ item.ext_port_dashboard}}:14002"
+    mounts:
+      - type: bind
+        source: "{{ item.path }}/identity"
+        target: /app/identity
+      - type: bind
+        source: "{{ item.path }}/data"
+        target: /app/config
+    networks:
+      - name: "{{ storj_network_name }}"
+  with_items:
+    - "{{ storj_nodes }}"
+  when: item.vpn_client is undefined
+
+- name: Setup Storagenode Container (via VPN)
+  docker_container:
+    state: "{{ item.state | default('started') }}"
+    restart_policy: unless-stopped
+    name: "storj-{{ item.name }}"
+    stop_timeout: 300
+    memory: 512M
+    image: storjlabs/storagenode:latest
+    env:
+      WALLET: "{{ storj_wallet }}"
+      EMAIL: "{{ storj_email }}"
+      ADDRESS: "{{ item.vpn_ext_address }}:{{ item.ext_port_node }}"
+      STORAGE: "{{ item.storagesize }}"
+      SETUP: "{{ item.setup | default('false') }}"
+    mounts:
+      - type: bind
+        source: "{{ item.path }}/identity"
+        target: /app/identity
+      - type: bind
+        source: "{{ item.path }}/data"
+        target: /app/config
+    network_mode: "container:vpn-{{ item.vpn_client}}"
+  with_items:
+    - "{{ storj_nodes }}"
+  when: item.vpn_client is defined
+
+- name: Create List of all Nodenames
+  set_fact:
+    node_names: "{{ storj_nodes | map(attribute='name') | list}}"
+    prefix: storj-

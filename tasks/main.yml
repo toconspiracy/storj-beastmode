@@ -1,0 +1,10 @@
+---
+- include: deploy_storj.yml
+- include: deploy_watchtower.yml
+  when: storj_deploy_watchtower
+- include: build_exporter.yml
+  when: storj_build_exporter and storj_deploy_exporter
+- include: deploy_exporter.yml
+  when: storj_deploy_exporter
+- include: deploy_monitoring.yml
+  when: storj_deploy_monitoring

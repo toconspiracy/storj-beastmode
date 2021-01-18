@@ -1,0 +1,79 @@
+---
+- name: Converge
+  hosts: instance
+  become: true
+  vars:
+    storj_network: storj
+    storj_wallet: "0x0000000000000000000000000000000000000000"
+    storj_email: "noreply@google.com"
+    storj_address: "127.0.0.1"
+    storj_graphs_path: /opt/test/storj-graphs
+    storj_grafana_additional_networks:
+      - name: proxy
+    storj_nodes:
+      - name: node
+        ext_port_node: 28900
+        ext_port_dashboard: 14000
+        ext_port_exporter: 9650
+        storagesize: 12000GB
+        path: /opt/test/storj-node
+        setup: "true"
+  tasks:
+    - name: Update apt cache
+      apt: update_cache=yes cache_valid_time=3600
+
+    - name: Upgrade all apt packages
+      apt: upgrade=dist
+
+    - name: Install dependencies
+      apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: yes
+      vars:
+        packages:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - gnupg-agent
+
+    - name: Add an apt signing key for Docker
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add apt repository for stable version
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: yes
+      vars:
+        packages:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+
+    - name: Setup Required Packages for Ansible
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - python3-pip
+        - python3-setuptools
+
+    - name: Setup reqired pip packages for Ansible
+      pip:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - docker
+
+    - name: "Include role-storj-beastmode"
+      include_role:
+        name: "role-storj-beastmode"

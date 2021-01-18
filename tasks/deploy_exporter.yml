@@ -1,0 +1,36 @@
+---
+- name: Check if Storagenode Exporter ist custom built
+  set_fact:
+    storj_exporter_image: storj-exporter
+  when: storj_build_exporter
+
+- name: Setup Storagenode Exporter (local)
+  docker_container:
+    state: "{{ item.state | default('started') }}"
+    restart_policy: unless-stopped
+    name: "storj-exporter-{{ item.name }}"
+    image: "{{ storj_exporter_image }}"
+    memory: 50M
+    env:
+      STORJ_HOST_ADDRESS: "storj-{{ item.name }}"
+    networks:
+      - name: "{{ storj_network_name }}"
+  with_items:
+    - "{{ storj_nodes }}"
+  when: item.vpn_client is undefined
+
+- name: Setup Storagenode Exporter (via VPN)
+  docker_container:
+    state: "{{ item.state | default('started') }}"
+    restart_policy: unless-stopped
+    name: "storj-exporter-{{ item.name }}"
+    image: "{{ storj_exporter_image }}"
+    memory: 50M
+    env:
+      STORJ_HOST_ADDRESS: "vpn-{{ item.vpn_client }}"
+    networks:
+      - name: "{{ storj_network_name }}"
+    links: "vpn-{{ item.vpn_client }}:storj-{{ item.name }}"
+  with_items:
+    - "{{ storj_nodes }}"
+  when: item.vpn_client is defined

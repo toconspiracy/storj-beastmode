@@ -1,0 +1,45 @@
+---
+- name: Create Storj Graphs Directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ storj_graphs_path }}/prometheus/conf"
+    - "{{ storj_graphs_path }}/prometheus/data"
+    - "{{ storj_graphs_path }}/grafana/lib"
+
+- name: Setup Prometheus
+  docker_container:
+    restart_policy: always
+    name: storj-prometheus
+    image: prom/prometheus
+    memory: 128M
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--storage.tsdb.retention.time=3y'
+    published_ports:
+      - "9090:9090"
+    volumes:
+      - "{{ storj_graphs_path }}/prometheus/conf:/etc/prometheus"
+      - "{{ storj_graphs_path }}/prometheus/data:/prometheus"
+    networks:
+      - name: "{{ storj_network_name }}"
+
+- name: Merge Storj Network and additional Grafana Networks
+  set_fact:
+    grafana_networks: "{{ grafana_networks + [ item ]  }}"
+  when: storj_grafana_additional_networks is defined
+  with_items: "{{ storj_grafana_additional_networks }}"
+
+- name: Setup Grafana
+  docker_container:
+    restart_policy: always
+    name: storj-grafana
+    image: grafana/grafana
+    memory: 128M
+    volumes:
+      - "{{ storj_graphs_path }}/grafana/lib:/var/lib/grafana"
+    networks: "{{ grafana_networks }}"

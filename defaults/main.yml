@@ -1,0 +1,12 @@
+---
+# Docker Network Config
+storj_network_name: storj
+storj_network_subnet: 172.11.0.0/24
+storj_network_gateway: 172.11.0.1
+storj_network_iprange: 172.11.0.64/26
+
+# Setup Options
+storj_deploy_watchtower: true
+storj_build_exporter: false
+storj_deploy_exporter: true
+storj_deploy_monitoring: true
