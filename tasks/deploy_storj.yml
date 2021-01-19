@@ -87,5 +87,5 @@
 
 - name: Create List of all Nodenames
   set_fact:
-    node_names: "{{ storj_nodes | map(attribute='name') | list}}"
+    node_names: "{{ storj_nodes | map(attribute='name') | list }}"
     prefix: storj-
