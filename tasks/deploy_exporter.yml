@@ -4,8 +4,10 @@
     storj_exporter_image: storj-exporter
   when: storj_build_exporter
 
-- name: Setup Storagenode Exporter (local)
+- name: Setup Storagenode Exporter (local), without exposing Port
   docker_container:
+    container_default_behavior: compatibility
+    networks_cli_compatible: no
     state: "{{ item.state | default('started') }}"
     restart_policy: unless-stopped
     name: "storj-exporter-{{ item.name }}"
@@ -17,10 +19,31 @@
       - name: "{{ storj_network_name }}"
   with_items:
     - "{{ storj_nodes }}"
-  when: item.vpn_client is undefined
+  when: item.vpn_client is undefined and item.ext_port_exporter is undefined
+
+- name: Setup Storagenode Exporter (local), exposing Port
+  docker_container:
+    container_default_behavior: compatibility
+    networks_cli_compatible: no
+    state: "{{ item.state | default('started') }}"
+    restart_policy: unless-stopped
+    name: "storj-exporter-{{ item.name }}"
+    image: "{{ storj_exporter_image }}"
+    memory: 50M
+    published_ports:
+      - "{{ item.ext_port_exporter }}:9651"
+    env:
+      STORJ_HOST_ADDRESS: "storj-{{ item.name }}"
+    networks:
+      - name: "{{ storj_network_name }}"
+  with_items:
+    - "{{ storj_nodes }}"
+  when: item.vpn_client is undefined and item.ext_port_exporter is defined
 
 - name: Setup Storagenode Exporter (via VPN)
   docker_container:
+    container_default_behavior: compatibility
+    networks_cli_compatible: no
     state: "{{ item.state | default('started') }}"
     restart_policy: unless-stopped
     name: "storj-exporter-{{ item.name }}"

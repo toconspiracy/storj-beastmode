@@ -4,12 +4,19 @@
     path: "{{ item }}"
     state: directory
   with_items:
-    - "{{ storj_graphs_path }}/prometheus/conf"
-    - "{{ storj_graphs_path }}/prometheus/data"
-    - "{{ storj_graphs_path }}/grafana/lib"
+    - "{{ storj_monitoring_path }}/prometheus/conf"
+    - "{{ storj_monitoring_path }}/prometheus/data"
+    - "{{ storj_monitoring_path }}/grafana/lib"
+
+- name: Create Prometheus Config
+  template:
+    src: "{{ storj_prometheus_config_template }}"
+    dest: "{{ storj_monitoring_path }}/prometheus/conf/prometheus.yml"
 
 - name: Setup Prometheus
   docker_container:
+    container_default_behavior: compatibility
+    networks_cli_compatible: no
     restart_policy: always
     name: storj-prometheus
     image: prom/prometheus
@@ -19,12 +26,12 @@
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
-      - '--storage.tsdb.retention.time=3y'
+      - '--storage.tsdb.retention.time={{ storj_prometheus_retention }}'
     published_ports:
       - "9090:9090"
     volumes:
-      - "{{ storj_graphs_path }}/prometheus/conf:/etc/prometheus"
-      - "{{ storj_graphs_path }}/prometheus/data:/prometheus"
+      - "{{ storj_monitoring_path }}/prometheus/conf:/etc/prometheus"
+      - "{{ storj_monitoring_path }}/prometheus/data:/prometheus"
     networks:
       - name: "{{ storj_network_name }}"
 
@@ -36,10 +43,12 @@
 
 - name: Setup Grafana
   docker_container:
+    container_default_behavior: compatibility
+    networks_cli_compatible: no
     restart_policy: always
     name: storj-grafana
     image: grafana/grafana
     memory: 128M
     volumes:
-      - "{{ storj_graphs_path }}/grafana/lib:/var/lib/grafana"
+      - "{{ storj_monitoring_path }}/grafana/lib:/var/lib/grafana"
     networks: "{{ grafana_networks }}"

@@ -1,6 +1,7 @@
 ---
 - name: Setup Storagenode Watchtower
   docker_container:
+    container_default_behavior: compatibility
     restart_policy: always
     name: storj-watchtower
     image: storjlabs/watchtower

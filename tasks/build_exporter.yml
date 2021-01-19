@@ -13,5 +13,6 @@
   docker_image:
     name: storj-exporter
     build:
+      pull: yes
       path: /opt/containerbuild/storj-exporter
     source: build

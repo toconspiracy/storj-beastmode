@@ -5,6 +5,10 @@ storj_network_subnet: 172.11.0.0/24
 storj_network_gateway: 172.11.0.1
 storj_network_iprange: 172.11.0.64/26
 
+# Prometheus Settings
+storj_prometheus_retention: 1y
+storj_prometheus_config_template: prometheus.j2
+
 # Setup Options
 storj_deploy_watchtower: true
 storj_build_exporter: false
