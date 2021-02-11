@@ -10,13 +10,13 @@ scrape_configs:
   - job_name: storj
     static_configs:
 {% for node in storj_nodes %}
-      - targets: ['storj-exporter-{{ node.name }}:9651']
+      - targets: ['storj-exporter-{{ node.name }}:9651'{%- if storj_deploy_log_exporter %},'storj-log-exporter-{{ node.name }}:9144'{% endif %}]
         labels:
           instance: '{{ node.prometheus_label }}'
 {% endfor %}
 {%- if storj_prometheus_external_exporter is defined -%}
 {% for exporter in storj_prometheus_external_exporter %}
-      - targets: ['{{ exporter.exporter_address }}']
+      - targets: ['{{ exporter.exporter_address }}'{%- if exporter.log_exporter_address  %},'{{ exporter.log_exporter_address }}'{% endif %}]
         labels:
           instance: '{{ exporter.prometheus_label }}'
 {% endfor %}

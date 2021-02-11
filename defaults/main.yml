@@ -13,4 +13,5 @@ storj_prometheus_config_template: prometheus.j2
 storj_deploy_watchtower: true
 storj_build_exporter: false
 storj_deploy_exporter: true
+storj_deploy_log_exporter: true
 storj_deploy_monitoring: true

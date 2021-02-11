@@ -6,5 +6,7 @@
   when: storj_build_exporter and storj_deploy_exporter
 - include: deploy_exporter.yml
   when: storj_deploy_exporter
+- include: deploy_log_exporter.yml
+  when: storj_deploy_log_exporter
 - include: deploy_monitoring.yml
   when: storj_deploy_monitoring

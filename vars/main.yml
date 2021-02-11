@@ -1,5 +1,6 @@
 ---
 # Storj Exporter
 storj_exporter_image: anclrii/storj-exporter:latest
+
 grafana_networks:
   - name: "{{ storj_network_name }}"
