@@ -27,6 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - initial Version
 
-[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/1.1.0...HEAD
-[1.1.0]: https://github.com/olivierlacan/keep-a-changelog/compare/1.0.0...1.1.0
+[Unreleased]: https://github.com/toconspiracy/storj-beastmode/compare/1.1.0...HEAD
+[1.1.0]: https://github.com/toconspiracy/storj-beastmode//compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/toconspiracy/storj-beastmode/releases/tag/1.0.0
